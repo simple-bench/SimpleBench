@@ -1,6 +1,6 @@
 # python run_benchmark.py --model_name=gpt-4o-mini --dataset_path=output.json
 
-from weave_utils.models import LiteLLMModel, MajorityVoteModel, OpenAIModel
+from weave_utils.models import LiteLLMModel, MajorityVoteModel
 from weave_utils.scorers import eval_majority_vote, eval_multi_choice
 import json
 import weave
