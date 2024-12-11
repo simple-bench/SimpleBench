@@ -1,16 +1,16 @@
 import os
+import asyncio
 import random
 import weave
 
 import time
-from litellm import completion
-# from litellm.exceptions import RateLimitError
+from litellm import acompletion
 
 from dotenv import load_dotenv
+load_dotenv()
 
 from openai import RateLimitError
 
-load_dotenv()
 
 MODEL_MAP = {
     "gpt-4o-mini": "gpt-4o-mini",
@@ -31,13 +31,16 @@ MODEL_MAP = {
 
 EXPONENTIAL_BASE = 2    
 
+
 class MajorityVoteModel(weave.Model):
     model: weave.Model
     num_responses: int = 3
     
     @weave.op()
-    def predict(self, prompt: str):
-        return [self.model.predict(prompt) for _ in range(self.num_responses)]
+    async def predict(self, prompt: str):
+        tasks = [self.model.predict(prompt) for _ in range(self.num_responses)]
+        return await asyncio.gather(*tasks)
+
 
 class LiteLLMModel(weave.Model):
     model_name: str
@@ -59,12 +62,12 @@ class LiteLLMModel(weave.Model):
 
     
     @weave.op()
-    def predict(self, prompt: str):
+    async def predict(self, prompt: str):
         delay = 2
 
         for i in range(self.max_retries):
             try:
-                response = completion(
+                response = await acompletion(
                     model=MODEL_MAP[self.model_name],
                     messages=[
                         {
@@ -76,7 +79,7 @@ class LiteLLMModel(weave.Model):
                     max_tokens=self.max_tokens,
                     top_p=self.top_p
                 )
-                
+
                 if response.choices[0].message.content is not None:
                     return response.choices[0].message.content
                 else:
@@ -87,11 +90,10 @@ class LiteLLMModel(weave.Model):
                 print(
                     f"RateLimitError, retrying after {round(delay, 2)} seconds, {i+1}-th retry...", e
                 )
-                time.sleep(delay)
+                await asyncio.sleep(delay)
                 continue
             except Exception as e:
                 print(f"Error in retry {i+1}, retrying...", e)
                 continue
 
         raise Exception("Failed to get response after max retries")
-    

@@ -1,11 +1,14 @@
 # python run_benchmark.py --model_name=gpt-4o-mini --dataset_path=output.json
 
-from weave_utils.models import LiteLLMModel, MajorityVoteModel, OpenAIModel
+from weave_utils.models import LiteLLMModel, MajorityVoteModel
 from weave_utils.scorers import eval_majority_vote, eval_multi_choice
 import json
 import weave
 import asyncio
 import argparse
+
+from dotenv import load_dotenv
+load_dotenv()
 
 
 def load_dataset(file_path):
@@ -19,22 +22,25 @@ def parse_args():
     parser.add_argument(
         "--model_name",
         type=str,
-        default="gpt_4o",
+        default="gpt-4o-mini",
         help="Model to benchmark.",
     )
     parser.add_argument(
         "--dataset_path",
         type=str,
-        default="output.json",
+        default="simple_bench_public.json",
         help="Dataset to benchmark.",
     )
     parser.add_argument(
-        "--entity", type=str, default="wandb_entity", help="Name of the W&B entity."
+        "--entity",
+        type=str,
+        default=None,
+        help="Name of the W&B entity.",
     )
     parser.add_argument(
         "--project",
         type=str,
-        default="wandb_project",
+        default="simple_bench",
         help="Name of the W&B project.",
     )
     parser.add_argument(
@@ -49,7 +55,11 @@ def parse_args():
 
 if __name__ == "__main__":
     args = parse_args()
-    weave.init(f"{args.entity}/{args.project}")
+
+    if args.entity is not None:
+        weave.init(f"{args.entity}/{args.project}")
+    else:
+        weave.init(f"{args.project}")
 
     evaluation = weave.Evaluation(
         dataset=load_dataset(args.dataset_path),

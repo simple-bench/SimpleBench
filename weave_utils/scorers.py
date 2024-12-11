@@ -4,11 +4,20 @@ import re
 
 
 @weave.op()
-def eval_majority_vote(model_output: List[str], answer: str):
+def extract_answer(output: str) -> str:
+    match = re.search(r"Final Answer:\s*([A-F])", output.strip(), re.IGNORECASE)
+    if match:
+        return match.group(1).upper()
+    else:
+        raise ValueError("No answer found in model output")
+
+
+@weave.op()
+def eval_majority_vote(output: List[str], answer: str):
     model_answers = []
-    for output in model_output:
+    for _output in output:
         try:
-            model_answers.append(extract_answer(output))
+            model_answers.append(extract_answer(_output))
         except ValueError:
             continue  # Skip this output if extraction fails
     
@@ -19,19 +28,6 @@ def eval_majority_vote(model_output: List[str], answer: str):
 
 
 @weave.op()
-def eval_multi_choice(model_output: str, answer: str):
-    model_answer = extract_answer(model_output)
+def eval_multi_choice(output: str, answer: str):
+    model_answer = extract_answer(output)
     return model_answer == answer
-
-
-@weave.op()
-def extract_answers(model_output: List[str]):
-    return [extract_answer(output) for output in model_output]
-
-
-def extract_answer(output: str) -> str:
-    match = re.search(r"Final Answer:\s*([A-F])", output.strip(), re.IGNORECASE)
-    if match:
-        return match.group(1).upper()
-    else:
-        raise ValueError("No answer found in model output")
