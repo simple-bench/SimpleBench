@@ -1,0 +1,11 @@
+[project]
+name = "simplebench"
+version = "0.1.0"
+description = "Add your description here"
+readme = "README.md"
+requires-python = ">=3.10"
+dependencies = [
+    "anthropic>=0.40.0",
+    "openai>=1.57.2",
+    "weave>=0.51.23",
+]
