@@ -68,7 +68,6 @@ if __name__ == "__main__":
     )
 
     model = LiteLLMModel(model_name=args.model_name)
-
     
     if args.num_responses > 1:
         model = MajorityVoteModel(model=model, num_responses=args.num_responses)

@@ -48,6 +48,7 @@ class LiteLLMModel(weave.Model):
     max_tokens: int = 2048
     top_p: float = 0.95
     max_retries: int = 3
+    system_prompt: str = "You are an expert at reasoning and you always pick the most realistic answer. Think step by step and output your reasoning followed by your final answer using the following format: Final Answer: X where X is one of the letters A, B, C, D, E, or F."
     
     def __init__(self, **data):
         super().__init__(**data)
@@ -70,6 +71,10 @@ class LiteLLMModel(weave.Model):
                 response = await acompletion(
                     model=MODEL_MAP[self.model_name],
                     messages=[
+                        {
+                            "role": "system",
+                            "content": self.system_prompt
+                        },
                         {
                             "role": "user",
                             "content": prompt
