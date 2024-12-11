@@ -29,7 +29,7 @@ def run_benchmark(
     max_tokens: int = 2048,
     top_p: float = 0.95,
     max_retries: int = 3,
-    system_prompt: Optional[str] = None,
+    system_prompt_path: str = "system_prompt.txt",
 ):
     """
     Run a benchmark evaluation on a given model and dataset.
@@ -70,8 +70,8 @@ def run_benchmark(
         trials=1,
     )
 
-    if system_prompt is None:
-        system_prompt = "You are an expert at reasoning and you always pick the most realistic answer. Think step by step and output your reasoning followed by your final answer using the following format: Final Answer: X where X is one of the letters A, B, C, D, E, or F."
+    with open(system_prompt_path, "r") as f:
+        system_prompt = f.read().strip()
 
     model = LiteLLMModel(
         model_name=model_name,
