@@ -1,7 +1,6 @@
 # python run_benchmark.py --model_name=gpt-4o-mini --dataset_path=output.json
 
-from weave_utils.models import LiteLLMModel, MajorityVoteModel
-from weave_utils.scorers import eval_majority_vote, eval_multi_choice
+from typing import Optional
 import json
 import weave
 import asyncio
@@ -9,6 +8,9 @@ from fire import Fire
 
 from dotenv import load_dotenv
 load_dotenv()
+
+from weave_utils.models import LiteLLMModel, MajorityVoteModel
+from weave_utils.scorers import eval_majority_vote, eval_multi_choice
 
 
 def load_dataset(file_path):
@@ -23,6 +25,11 @@ def run_benchmark(
     num_responses: int = 1,
     entity: str = None,
     project: str = "simple_bench",
+    temp: float = 0.7,
+    max_tokens: int = 2048,
+    top_p: float = 0.95,
+    max_retries: int = 3,
+    system_prompt: Optional[str] = None,
 ):
     """
     Run a benchmark evaluation on a given model and dataset.
@@ -37,6 +44,16 @@ def run_benchmark(
         entity (str): Optional Weave entity (org/user name) for evaluation tracking.
         project (str): The project name under the specified entity.
             Default is "simple_bench".
+        temp (float): Temperature for the model.
+            Default is 0.7.
+        max_tokens (int): Maximum number of tokens to generate.
+            Default is 2048.
+        top_p (float): Top-p for the model.
+            Default is 0.95.
+        max_retries (int): Maximum number of retries for the model.
+            Default is 3.
+        system_prompt (str): System prompt for the model.
+            Default is "You are an expert at reasoning and you always pick the most realistic answer. Think step by step and output your reasoning followed by your final answer using the following format: Final Answer: X where X is one of the letters A, B, C, D, E, or F."
 
     Example:
         python run_benchmark.py --model_name=gpt-4o-mini --dataset_path=simple_bench_public.json --num_responses=3
@@ -53,7 +70,17 @@ def run_benchmark(
         trials=1,
     )
 
-    model = LiteLLMModel(model_name=model_name)
+    if system_prompt is None:
+        system_prompt = "You are an expert at reasoning and you always pick the most realistic answer. Think step by step and output your reasoning followed by your final answer using the following format: Final Answer: X where X is one of the letters A, B, C, D, E, or F."
+
+    model = LiteLLMModel(
+        model_name=model_name,
+        temp=temp,
+        max_tokens=max_tokens,
+        top_p=top_p,
+        max_retries=max_retries,
+        system_prompt=system_prompt
+    )
 
     if num_responses > 1:
         model = MajorityVoteModel(model=model, num_responses=num_responses)
