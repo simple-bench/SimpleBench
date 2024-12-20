@@ -43,7 +43,7 @@ def run_benchmark(
             Default is 1 (no majority voting).
         entity (str): Optional Weave entity (org/user name) for evaluation tracking.
         project (str): The project name under the specified entity.
-            Default is "simple_bench".
+            Default is "simple_bench_public".
         temp (float): Temperature for the model.
             Default is 0.7.
         max_tokens (int): Maximum number of tokens to generate.
