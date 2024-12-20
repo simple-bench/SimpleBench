@@ -21,8 +21,11 @@ source llm_env/bin/activate
 ```
 
 Install dependencies:
+
+The best way to install dependencies is to use `uv`. If you don't have it installed in your environment, you can install it with `pip install uv`.
+
 ``` 
-pip install -r requirements.txt
+uv pip install -r pyproject.toml
 ```
 
 Create a `.env` file with the following:
